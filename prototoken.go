@@ -3,7 +3,10 @@
 package prototoken
 
 import (
+	"crypto"
 	"crypto/hmac"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha256"
 
 	"github.com/ThatsMrTalbot/prototoken/pb"
@@ -138,5 +141,45 @@ func (h *hmacKey) Validate(data []byte, signature []byte) error {
 		return errors.New("Invalid signature")
 	}
 
+	return nil
+}
+
+type rsaPrivateKey struct {
+	pk *rsa.PrivateKey
+}
+
+// NewRSAPrivateKey creates a private key from an RSA private key
+func NewRSAPrivateKey(key *rsa.PrivateKey) PrivateKey {
+	return &rsaPrivateKey{
+		pk: key,
+	}
+}
+
+func (r *rsaPrivateKey) Generate(data []byte) ([]byte, error) {
+	hash := sha256.Sum256(data)
+	sig, err := rsa.SignPSS(rand.Reader, r.pk, crypto.SHA256, hash[:], nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not sign token")
+	}
+	return sig, nil
+}
+
+type rsaPublicKey struct {
+	pk *rsa.PublicKey
+}
+
+// NewRSAPublicKey creates a public key from an RSA public key
+func NewRSAPublicKey(key *rsa.PublicKey) PublicKey {
+	return &rsaPublicKey{
+		pk: key,
+	}
+}
+
+func (r *rsaPublicKey) Validate(data []byte, signature []byte) error {
+	hash := sha256.Sum256(data)
+	err := rsa.VerifyPSS(r.pk, crypto.SHA256, hash[:], signature, nil)
+	if err != nil {
+		return errors.Wrap(err, "Could not validate signature")
+	}
 	return nil
 }
