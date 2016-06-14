@@ -22,8 +22,8 @@ type PublicKey interface {
 	Validate(data []byte, signature []byte) error
 }
 
-// Generate generates token bytes
-func Generate(object proto.Message, key PrivateKey) ([]byte, error) {
+// GenerateBytes generates token bytes
+func GenerateBytes(object proto.Message, key PrivateKey) ([]byte, error) {
 	token, err := GenerateToken(object, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "Token could not be generated")
@@ -65,8 +65,8 @@ func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 	}, nil
 }
 
-// Validate validates token bytes
-func Validate(data []byte, key PublicKey, result proto.Message) (*pb.Token, error) {
+// ValidateBytes validates token bytes
+func ValidateBytes(data []byte, key PublicKey, result proto.Message) (*pb.Token, error) {
 	var token pb.Token
 	if err := proto.Unmarshal(data, &token); err != nil {
 		return nil, errors.Wrap(err, "Token could not be unmarshaled")
@@ -134,7 +134,7 @@ func (h *hmacKey) Validate(data []byte, signature []byte) error {
 		return errors.Wrap(err, "Could not generate comparison signature")
 	}
 
-	if h.compareSlice(expected, signature) {
+	if !h.compareSlice(expected, signature) {
 		return errors.New("Invalid signature")
 	}
 

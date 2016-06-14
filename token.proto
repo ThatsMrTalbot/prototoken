@@ -8,3 +8,10 @@ message Token {
     google.protobuf.Any Value = 1;
     bytes Signature = 2;
 }
+
+
+message ExampleToken {
+    string Some = 1;
+    int64 Example = 2;
+    bool Values = 3;
+}
