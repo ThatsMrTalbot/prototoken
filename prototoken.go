@@ -101,10 +101,16 @@ type hmacKey struct {
 	secret []byte
 }
 
-// NewHMACKey creates a new key
-func NewHMACKey(secret []byte) (PublicKey, PrivateKey) {
+// NewHMACPublicKey creates a new public key
+func NewHMACPublicKey(secret []byte) PublicKey {
 	key := &hmacKey{secret: secret}
-	return key, key
+	return key
+}
+
+// NewHMACPrivateKey creates a new private key
+func NewHMACPrivateKey(secret []byte) PrivateKey {
+	key := &hmacKey{secret: secret}
+	return key
 }
 
 func (h *hmacKey) compareSlice(b1 []byte, b2 []byte) bool {

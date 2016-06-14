@@ -9,7 +9,7 @@ import (
 
 func TestToken(t *testing.T) {
 	Convey("Given a token", t, func() {
-		public, private := NewHMACKey([]byte("SomeSecretKey"))
+		private := NewHMACPrivateKey([]byte("SomeSecretKey"))
 		expected := &pb.ExampleToken{
 			Some:    "abc",
 			Example: 123,
@@ -20,6 +20,7 @@ func TestToken(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When a token is validated with the correct key", func() {
+			public := NewHMACPublicKey([]byte("SomeSecretKey"))
 			result := new(pb.ExampleToken)
 			err := ValidateToken(token, public, result)
 
@@ -30,7 +31,7 @@ func TestToken(t *testing.T) {
 		})
 
 		Convey("When a token is validated with the incorrect key", func() {
-			public, _ := NewHMACKey([]byte("InvalidKey"))
+			public := NewHMACPublicKey([]byte("InvalidKey"))
 			result := new(pb.ExampleToken)
 			err := ValidateToken(token, public, result)
 
@@ -43,7 +44,7 @@ func TestToken(t *testing.T) {
 
 func TestTokenString(t *testing.T) {
 	Convey("Given a token string", t, func() {
-		public, private := NewHMACKey([]byte("SomeSecretKey"))
+		private := NewHMACPrivateKey([]byte("SomeSecretKey"))
 		expected := &pb.ExampleToken{
 			Some:    "abc",
 			Example: 123,
@@ -55,6 +56,7 @@ func TestTokenString(t *testing.T) {
 
 		Convey("When a token is validated with the correct key", func() {
 			result := new(pb.ExampleToken)
+			public := NewHMACPublicKey([]byte("SomeSecretKey"))
 			_, err := ValidateString(token, public, result)
 
 			Convey("Then the token should be valid", func() {
@@ -64,7 +66,7 @@ func TestTokenString(t *testing.T) {
 		})
 
 		Convey("When a token is validated with the incorrect key", func() {
-			public, _ := NewHMACKey([]byte("InvalidKey"))
+			public := NewHMACPublicKey([]byte("InvalidKey"))
 			result := new(pb.ExampleToken)
 			_, err := ValidateString(token, public, result)
 
@@ -77,7 +79,7 @@ func TestTokenString(t *testing.T) {
 
 func TestTokenBytes(t *testing.T) {
 	Convey("Given token bytes", t, func() {
-		public, private := NewHMACKey([]byte("SomeSecretKey"))
+		private := NewHMACPrivateKey([]byte("SomeSecretKey"))
 		expected := &pb.ExampleToken{
 			Some:    "abc",
 			Example: 123,
@@ -89,6 +91,7 @@ func TestTokenBytes(t *testing.T) {
 
 		Convey("When a token is validated with the correct key", func() {
 			result := new(pb.ExampleToken)
+			public := NewHMACPublicKey([]byte("SomeSecretKey"))
 			_, err := ValidateBytes(token, public, result)
 
 			Convey("Then the token should be valid", func() {
@@ -98,7 +101,7 @@ func TestTokenBytes(t *testing.T) {
 		})
 
 		Convey("When a token is validated with the incorrect key", func() {
-			public, _ := NewHMACKey([]byte("InvalidKey"))
+			public := NewHMACPublicKey([]byte("InvalidKey"))
 			result := new(pb.ExampleToken)
 			_, err := ValidateBytes(token, public, result)
 
