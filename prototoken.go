@@ -1,4 +1,4 @@
-//go:generate protoc --go_out=Mgoogle/protobuf/any.proto=github.com/golang/protobuf/ptypes/any:. token.proto
+//go:generate protoc --go_out=Mgoogle/protobuf/any.proto=github.com/golang/protobuf/ptypes/any:pb token.proto
 
 package prototoken
 
@@ -6,6 +6,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 
+	"github.com/ThatsMrTalbot/prototoken/pb"
 	"github.com/micro/protobuf/proto"
 	"github.com/micro/protobuf/ptypes"
 	"github.com/pkg/errors"
@@ -37,7 +38,7 @@ func Generate(object proto.Message, key PrivateKey) ([]byte, error) {
 }
 
 // GenerateToken generates a token object
-func GenerateToken(object proto.Message, key PrivateKey) (*Token, error) {
+func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 	value, err := ptypes.MarshalAny(object)
 	if err != nil {
 		return nil, errors.Wrap(err, "Value could not be marshaled")
@@ -48,7 +49,7 @@ func GenerateToken(object proto.Message, key PrivateKey) (*Token, error) {
 		return nil, errors.Wrap(err, "Value could not be signed")
 	}
 
-	return &Token{
+	return &pb.Token{
 		Value:     value,
 		Signature: signature,
 	}, nil
@@ -56,7 +57,7 @@ func GenerateToken(object proto.Message, key PrivateKey) (*Token, error) {
 
 // Validate validates token bytes
 func Validate(data []byte, key PublicKey, result proto.Message) error {
-	var token Token
+	var token pb.Token
 	if err := proto.Unmarshal(data, &token); err != nil {
 		return errors.Wrap(err, "Token could not be unmarshaled")
 	}
@@ -65,7 +66,7 @@ func Validate(data []byte, key PublicKey, result proto.Message) error {
 }
 
 // ValidateToken validates token object
-func ValidateToken(token *Token, key PublicKey, result proto.Message) error {
+func ValidateToken(token *pb.Token, key PublicKey, result proto.Message) error {
 	if err := key.Validate(token.Value.Value, token.Signature); err != nil {
 		return errors.Wrap(err, "Token could not be validated")
 	}
