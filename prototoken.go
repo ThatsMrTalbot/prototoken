@@ -66,23 +66,23 @@ func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 }
 
 // Validate validates token bytes
-func Validate(data []byte, key PublicKey, result proto.Message) error {
+func Validate(data []byte, key PublicKey, result proto.Message) (*pb.Token, error) {
 	var token pb.Token
 	if err := proto.Unmarshal(data, &token); err != nil {
-		return errors.Wrap(err, "Token could not be unmarshaled")
+		return nil, errors.Wrap(err, "Token could not be unmarshaled")
 	}
 
-	return ValidateToken(&token, key, result)
+	return &token, ValidateToken(&token, key, result)
 }
 
 // ValidateString validates token string
-func ValidateString(data string, key PublicKey, result proto.Message) error {
+func ValidateString(data string, key PublicKey, result proto.Message) (*pb.Token, error) {
 	var token pb.Token
 	if err := proto.UnmarshalText(data, &token); err != nil {
-		return errors.Wrap(err, "Token could not be unmarshaled")
+		return nil, errors.Wrap(err, "Token could not be unmarshaled")
 	}
 
-	return ValidateToken(&token, key, result)
+	return &token, ValidateToken(&token, key, result)
 }
 
 // ValidateToken validates token object
