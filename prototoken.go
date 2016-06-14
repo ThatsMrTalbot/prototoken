@@ -37,6 +37,16 @@ func Generate(object proto.Message, key PrivateKey) ([]byte, error) {
 	return data, nil
 }
 
+// GenerateString generates token string
+func GenerateString(object proto.Message, key PrivateKey) (string, error) {
+	token, err := GenerateToken(object, key)
+	if err != nil {
+		return "", errors.Wrap(err, "Token could not be generated")
+	}
+
+	return proto.CompactTextString(token), nil
+}
+
 // GenerateToken generates a token object
 func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 	value, err := ptypes.MarshalAny(object)
@@ -59,6 +69,16 @@ func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 func Validate(data []byte, key PublicKey, result proto.Message) error {
 	var token pb.Token
 	if err := proto.Unmarshal(data, &token); err != nil {
+		return errors.Wrap(err, "Token could not be unmarshaled")
+	}
+
+	return ValidateToken(&token, key, result)
+}
+
+// ValidateString validates token string
+func ValidateString(data string, key PublicKey, result proto.Message) error {
+	var token pb.Token
+	if err := proto.UnmarshalText(data, &token); err != nil {
 		return errors.Wrap(err, "Token could not be unmarshaled")
 	}
 
