@@ -7,8 +7,8 @@ import (
 	"crypto/sha256"
 
 	"github.com/ThatsMrTalbot/prototoken/pb"
-	"github.com/micro/protobuf/proto"
-	"github.com/micro/protobuf/ptypes"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 )
 
