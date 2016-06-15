@@ -163,6 +163,13 @@ func NewRSAPrivateKey(key *rsa.PrivateKey) PrivateKey {
 
 func (r *rsaPrivateKey) Generate(data []byte) ([]byte, error) {
 	hash := sha256.Sum256(data)
+
+	// rsa/pss.go panics if it calculates a negative salt size. Catch here.
+	salt := (r.pk.N.BitLen()+7)/8 - 2 - crypto.SHA256.Size()
+	if salt < 0 {
+		return nil, errors.New("Private key must have a bit length of at least 266")
+	}
+
 	sig, err := rsa.SignPSS(rand.Reader, r.pk, crypto.SHA256, hash[:], nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not sign token")

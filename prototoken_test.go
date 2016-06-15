@@ -1,6 +1,8 @@
 package prototoken
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"testing"
 
 	"github.com/ThatsMrTalbot/prototoken/pb"
@@ -107,6 +109,31 @@ func TestTokenBytes(t *testing.T) {
 
 			Convey("Then the token should not be valid", func() {
 				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+}
+
+func TestRSA(t *testing.T) {
+	Convey("Given an RSA private key", t, func() {
+		key, err := rsa.GenerateKey(rand.Reader, 512)
+		So(err, ShouldBeNil)
+
+		private := NewRSAPrivateKey(key)
+
+		Convey("When signing a byte slice", func() {
+			data := make([]byte, 20)
+
+			_, err := rand.Reader.Read(data)
+			So(err, ShouldBeNil)
+
+			sig, err := private.Generate(data)
+			So(err, ShouldBeNil)
+
+			Convey("The signature should be valid", func() {
+				public := NewRSAPublicKey(&key.PublicKey)
+				err := public.Validate(data, sig)
+				So(err, ShouldBeNil)
 			})
 		})
 	})
