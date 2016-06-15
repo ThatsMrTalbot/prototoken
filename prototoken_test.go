@@ -41,6 +41,41 @@ func TestToken(t *testing.T) {
 				So(err, ShouldNotBeNil)
 			})
 		})
+
+		Convey("When a token is validated with a nil key", func() {
+			result := new(pb.ExampleToken)
+			err := ValidateToken(token, nil, result)
+
+			Convey("Then the token should not be valid", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a nil key", t, func() {
+		value := &pb.ExampleToken{
+			Some:    "abc",
+			Example: 123,
+			Values:  true,
+		}
+		Convey("When a token is generated", func() {
+			_, err := GenerateToken(value, nil)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a nil value", t, func() {
+		private := NewHMACPrivateKey([]byte("SomeSecretKey"))
+		Convey("When a token is generated", func() {
+			_, err := GenerateToken(nil, private)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
 	})
 }
 
@@ -76,6 +111,54 @@ func TestTokenString(t *testing.T) {
 				So(err, ShouldNotBeNil)
 			})
 		})
+
+		Convey("When a token is validated with a nil key", func() {
+			result := new(pb.ExampleToken)
+			_, err := ValidateString(token, nil, result)
+
+			Convey("Then the token should not be valid", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a nil key", t, func() {
+		value := &pb.ExampleToken{
+			Some:    "abc",
+			Example: 123,
+			Values:  true,
+		}
+		Convey("When a string token is generated", func() {
+			_, err := GenerateString(value, nil)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a nil value", t, func() {
+		private := NewHMACPrivateKey([]byte("SomeSecretKey"))
+		Convey("When a string token is generated", func() {
+			_, err := GenerateString(nil, private)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given an invalid token string", t, func() {
+		public := NewHMACPublicKey([]byte("SomeSecretKey"))
+
+		Convey("When a token is validated", func() {
+			result := new(pb.ExampleToken)
+			_, err := ValidateString("INVALID STRING", public, result)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
 	})
 }
 
@@ -108,6 +191,54 @@ func TestTokenBytes(t *testing.T) {
 			_, err := ValidateBytes(token, public, result)
 
 			Convey("Then the token should not be valid", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+
+		Convey("When a token is validated with a nil key", func() {
+			result := new(pb.ExampleToken)
+			_, err := ValidateBytes(token, nil, result)
+
+			Convey("Then the token should not be valid", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a nil key", t, func() {
+		value := &pb.ExampleToken{
+			Some:    "abc",
+			Example: 123,
+			Values:  true,
+		}
+		Convey("When a byte token is generated", func() {
+			_, err := GenerateBytes(value, nil)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a nil value", t, func() {
+		private := NewHMACPrivateKey([]byte("SomeSecretKey"))
+		Convey("When a byte token is generated", func() {
+			_, err := GenerateBytes(nil, private)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given invalid token bytes", t, func() {
+		public := NewHMACPublicKey([]byte("SomeSecretKey"))
+
+		Convey("When a token is validated", func() {
+			result := new(pb.ExampleToken)
+			_, err := ValidateBytes([]byte("INVALID STRING"), public, result)
+
+			Convey("Then an error should be returned", func() {
 				So(err, ShouldNotBeNil)
 			})
 		})

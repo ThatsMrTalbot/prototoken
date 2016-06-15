@@ -50,6 +50,10 @@ func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 		return nil, errors.Wrap(err, "Value could not be marshaled")
 	}
 
+	if key == nil {
+		return nil, errors.New("Cannot sign using nil key")
+	}
+
 	signature, err := key.Generate(value.Value)
 	return &pb.Token{
 		Value:     value,
@@ -79,6 +83,10 @@ func ValidateString(data string, key PublicKey, result proto.Message) (*pb.Token
 
 // ValidateToken validates token object
 func ValidateToken(token *pb.Token, key PublicKey, result proto.Message) error {
+	if key == nil {
+		return errors.New("Cannot verify using nil key")
+	}
+
 	if err := key.Validate(token.Value.Value, token.Signature); err != nil {
 		return errors.Wrap(err, "Token could not be validated")
 	}
