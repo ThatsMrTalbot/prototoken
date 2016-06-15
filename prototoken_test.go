@@ -268,4 +268,46 @@ func TestRSA(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given a small RSA private key", t, func() {
+		key, err := rsa.GenerateKey(rand.Reader, 100)
+		So(err, ShouldBeNil)
+
+		private := NewRSAPrivateKey(key)
+
+		Convey("When signing a byte slice", func() {
+			data := make([]byte, 20)
+
+			_, err := rand.Reader.Read(data)
+			So(err, ShouldBeNil)
+
+			_, err = private.Generate(data)
+
+			Convey("Then an error should be returned", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+}
+
+func TestCompare(t *testing.T) {
+	Convey("Given byte slices with the same data", t, func() {
+		d1, d2 := []byte("some_data"), []byte("some_data")
+		Convey("When compared", func() {
+			match := (&hmacKey{}).compareSlice(d1, d2)
+			Convey("Then the slices should match", func() {
+				So(match, ShouldBeTrue)
+			})
+		})
+	})
+
+	Convey("Given byte slices with different data", t, func() {
+		d1, d2 := []byte("some_data"), []byte("some_other_data")
+		Convey("When compared", func() {
+			match := (&hmacKey{}).compareSlice(d1, d2)
+			Convey("Then the slices should not match", func() {
+				So(match, ShouldBeFalse)
+			})
+		})
+	})
 }
