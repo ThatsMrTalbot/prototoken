@@ -33,21 +33,14 @@ func GenerateBytes(object proto.Message, key PrivateKey) ([]byte, error) {
 	}
 
 	data, err := proto.Marshal(token)
-	if err != nil {
-		return nil, errors.Wrap(err, "Token could not be marshaled")
-	}
-
-	return data, nil
+	return data, errors.Wrap(err, "Token could not be marshaled")
 }
 
 // GenerateString generates token string
 func GenerateString(object proto.Message, key PrivateKey) (string, error) {
 	token, err := GenerateToken(object, key)
-	if err != nil {
-		return "", errors.Wrap(err, "Token could not be generated")
-	}
 
-	return proto.CompactTextString(token), nil
+	return proto.CompactTextString(token), errors.Wrap(err, "Token could not be generated")
 }
 
 // GenerateToken generates a token object
@@ -58,14 +51,10 @@ func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 	}
 
 	signature, err := key.Generate(value.Value)
-	if err != nil {
-		return nil, errors.Wrap(err, "Value could not be signed")
-	}
-
 	return &pb.Token{
 		Value:     value,
 		Signature: signature,
-	}, nil
+	}, errors.Wrap(err, "Value could not be signed")
 }
 
 // ValidateBytes validates token bytes
@@ -130,11 +119,7 @@ func (h *hmacKey) compareSlice(b1 []byte, b2 []byte) bool {
 func (h *hmacKey) Generate(data []byte) ([]byte, error) {
 	mac := hmac.New(sha256.New, h.secret)
 	_, err := mac.Write(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return mac.Sum(nil), nil
+	return mac.Sum(nil), errors.Wrap(err, "Could not generate signature")
 }
 
 func (h *hmacKey) Validate(data []byte, signature []byte) error {
@@ -171,10 +156,7 @@ func (r *rsaPrivateKey) Generate(data []byte) ([]byte, error) {
 	}
 
 	sig, err := rsa.SignPSS(rand.Reader, r.pk, crypto.SHA256, hash[:], nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not sign token")
-	}
-	return sig, nil
+	return sig, errors.Wrap(err, "Could not sign token")
 }
 
 type rsaPublicKey struct {
@@ -191,8 +173,5 @@ func NewRSAPublicKey(key *rsa.PublicKey) PublicKey {
 func (r *rsaPublicKey) Validate(data []byte, signature []byte) error {
 	hash := sha256.Sum256(data)
 	err := rsa.VerifyPSS(r.pk, crypto.SHA256, hash[:], signature, nil)
-	if err != nil {
-		return errors.Wrap(err, "Could not validate signature")
-	}
-	return nil
+	return errors.Wrap(err, "Could not validate signature")
 }
