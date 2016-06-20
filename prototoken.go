@@ -63,22 +63,36 @@ func GenerateToken(object proto.Message, key PrivateKey) (*pb.Token, error) {
 
 // ValidateBytes validates token bytes
 func ValidateBytes(data []byte, key PublicKey, result proto.Message) (*pb.Token, error) {
-	var token pb.Token
-	if err := proto.Unmarshal(data, &token); err != nil {
-		return nil, errors.Wrap(err, "Token could not be unmarshaled")
+	token, err := UnpackBytes(data)
+	if err != nil {
+		return nil, err
 	}
 
-	return &token, ValidateToken(&token, key, result)
+	return token, ValidateToken(token, key, result)
+}
+
+// UnpackBytes unpacks token bytes without validation
+func UnpackBytes(data []byte) (*pb.Token, error) {
+	var token pb.Token
+	err := proto.Unmarshal(data, &token)
+	return &token, errors.Wrap(err, "Token could not be unmarshaled")
 }
 
 // ValidateString validates token string
 func ValidateString(data string, key PublicKey, result proto.Message) (*pb.Token, error) {
-	var token pb.Token
-	if err := proto.UnmarshalText(data, &token); err != nil {
-		return nil, errors.Wrap(err, "Token could not be unmarshaled")
+	token, err := UnpackString(data)
+	if err != nil {
+		return nil, err
 	}
 
-	return &token, ValidateToken(&token, key, result)
+	return token, ValidateToken(token, key, result)
+}
+
+// UnpackString unpacks a token string without validation
+func UnpackString(data string) (*pb.Token, error) {
+	var token pb.Token
+	err := proto.UnmarshalText(data, &token)
+	return &token, errors.Wrap(err, "Token could not be unmarshaled")
 }
 
 // ValidateToken validates token object
@@ -91,7 +105,13 @@ func ValidateToken(token *pb.Token, key PublicKey, result proto.Message) error {
 		return errors.Wrap(err, "Token could not be validated")
 	}
 
-	return ptypes.UnmarshalAny(token.Value, result)
+	return ExtractMessage(token, result)
+}
+
+// ExtractMessage extracts a tokens value without validation
+func ExtractMessage(token *pb.Token, result proto.Message) error {
+	err := ptypes.UnmarshalAny(token.Value, result)
+	return errors.Wrap(err, "Could not unmarshal token mesasge")
 }
 
 type hmacKey struct {
